@@ -1,0 +1,95 @@
+<mujoco model="hoppy">
+  <compiler meshdir="meshes/" angle="radian"/>
+
+  <option gravity="0 0 -9.81"
+          integrator="RK4"
+          solver="Newton"
+          timestep="0.001"
+          iterations="50"
+          tolerance="1e-8"/>
+
+  <default>
+    <geom solref="0.02 1.0"
+          solimp="0.95 0.99 0.001 0.5 2"
+          friction="1.9 0.02 0.001"
+          condim="3"/>
+  </default>
+
+  <asset>
+    <mesh name="base"     file="base.stl"     scale="0.001 0.001 0.001"/>
+    <mesh name="gantry"   file="gantry.stl"   scale="0.001 0.001 0.001"/>
+    <mesh name="boom_hip" file="boom_hip.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="thigh"    file="thigh.stl"    scale="0.001 0.001 0.001"/>
+    <mesh name="shank"    file="shank.stl"    scale="0.001 0.001 0.001"/>
+  </asset>
+
+  <visual>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.8 0.8 0.8"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <scale jointlength="0.1" jointwidth="0.1"/>
+  </visual>
+
+  <worldbody>
+    <geom name="floor" type="plane" size="10 10 0.1" pos="0 0 0"
+          contype="1" conaffinity="1" rgba="0.9 0.9 0.9 1"/>
+
+    <body name="base" pos="0 0 0">
+      <geom type="mesh" mesh="base" mass="0" rgba="0.1 0.5 0.8 1.0"
+            contype="0" conaffinity="0"/>
+
+      <body name="gantry" pos="0 0 0.4">
+        <joint name="yaw" type="hinge" axis="0 0 1"/>
+        <geom type="mesh" mesh="gantry" mass="2.0" rgba="0.1 0.5 0.8 0.7"
+              contype="0" conaffinity="0"/>
+
+        <body name="boom_hip" pos="-2.25 -0.47 1.60">  <!-- prueba este valor -->
+          <joint name="pitch" type="hinge" axis="0 1 0" pos="2.3 0.4 0.58"
+                 damping="5.0" range="-1.5 1.5"/>
+          <geom type="mesh" mesh="boom_hip" mass="15.0" pos="0 0 0" rgba="0.1 0.5 0.8 1.0"
+                contype="0" conaffinity="0"/>
+
+          <body name="counterweight" pos="5.3 0.75 0.4">
+            <geom type="box" size="0.1 0.1 0.1" mass="37.0" rgba="0.3 0.3 0.3 0.3"
+                  contype="0" conaffinity="0"/>
+          </body>
+
+          <body name="thigh" pos="-4.6 -1.19 -0.4">
+            <joint name="hip" type="hinge" axis="1 0 0"
+                   pos="0 0.6 1" range="-1.0 1.0"
+                   armature="0.0049" damping="0.16" stiffness="14.0"/>
+            <geom type="mesh" mesh="thigh" mass="4.5" rgba="0.1 0.5 0.8 1.0"
+                  contype="0" conaffinity="0"/>
+
+            <body name="shank" pos="0 -0.6 -1.56">
+              <joint name="knee" type="hinge" axis="1 0 0"
+                     pos="0 0.5 1.85" armature="0.0049"
+                     limited="true"
+                     range="-1.5 0.5"
+                     damping="0.16" stiffness="14.0"/>
+              <geom type="mesh" mesh="shank" mass="3.5" rgba="0.1 0.5 0.8 1.0"
+                    contype="0" conaffinity="0"/>
+
+              <site name="foot_site" pos="-0.02 0.69 0.15" size="0.07"/>
+              <geom name="foot_contact" type="sphere" size="0.16"
+                    pos="-0.02 0.69 0.25"
+                    contype="1" conaffinity="1"
+                    solref="0.02 1.0"
+                    solimp="0.9 0.95 0.001 0.5 2"
+                    friction="0.8 0.02 0.001"
+                    condim="3" mass="0"/>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="hip_motor"  joint="hip"  gear="26.9" forcerange="-100.34 100.34"/>
+    <motor name="knee_motor" joint="knee" gear="26.9" forcerange="-100.34 100.34"/>
+  </actuator>
+
+  <sensor>
+    <touch name="foot_touch" site="foot_site"/>
+  </sensor>
+</mujoco>
